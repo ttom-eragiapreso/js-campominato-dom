@@ -18,19 +18,20 @@ const container = document.querySelector(".container");
 const button = document.querySelector("#inizia");
 const select = document.querySelector("#selectDifficoltà");
 const reset = document.getElementById("reset");
+const mainWrapper = document.querySelector(".main-wrapper")
 let BOMBS_NUMBER = 16;
 let bombs = [];
 let score = 0;
 
 
 // Aggiungo una funzione custom al click del bottone per iniziare
-button.addEventListener("click", createSquares);
+button.addEventListener("click", initGame);
 
 
 let isEmpty = true;
 
 // La funzione custom
-function createSquares(){
+function initGame(){
 
   // Appena clicco controllo subito se non ho cliccato prima con questa flag
   if(isEmpty){
@@ -58,37 +59,129 @@ function createSquares(){
         difficoltà = 101;
         width = "10%"
         break
-  }
-    
-    // Faccio un loop da 1 fino a il valore trovato con lo switch e per ogni iterazione creo un elemento div, con classe square, che dentro ha il numero al contatore del loop, e infine ad esso stesso gli creo un addEventListener che al click gli assegni una classe per colorarlo e stampi in console il suo numero.
-    for(let i = 1; i < difficoltà; i++){
-      let square = document.createElement("div");
-      square.style.width = width;
-      square.classList.add("square");
-      square.innerHTML = i;
-      container.append(square);
-      square.addEventListener("click", function(){
-        console.log(this.innerHTML);
-        this.classList.add("blue")
-      })
-    }
-    // Una volta che finisce tutta la logica del click inverto il valore della flag.
+  } 
+  bombs = createBombs(difficoltà -1);
+
+  createCells(difficoltà, width);
+  
+  assignBombs(bombs);
+
+
+
+
     isEmpty = false;
   }else {
-
     console.log("Devi prima resettare")
   }
   
 }
 
 
+
+
+
+
+
+
+
+
+
+// Mostro le bombe 
+
+function assignBombs(bombs){
+  console.log(bombs)
+  const squares = document.getElementsByClassName("square");
+  for(let i = 0; i < squares.length; i++){
+    if(bombs.includes(parseInt(squares[i].innerHTML))){
+      squares[i].isBomb = true;
+    }else squares[i].isBomb = false;
+  }
+  // console.log(square)
+}
+
+// Creo le bombe
+
+function createBombs(limit){
+  const bombsGenerated = [];
+
+  while(bombsGenerated.length < BOMBS_NUMBER){
+
+    let random = getRandomNumberInRange(1, limit);
+    if(!bombsGenerated.includes(random)){
+      bombsGenerated.push(random)
+    }
+  }
+  return bombsGenerated
+}
+
+
+
+
+function getRandomNumberInRange(min, max){
+  return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
+
+
 // La funzione di reset che avviene quando il bottone di reset viene premuto semplicemente cancella tutto quello che c'è dentro al container che ospita tutti i quadrati. Infine nasconde se stesso.
 reset.addEventListener("click", function(){
   container.innerHTML = "";
+  document.querySelector("h1").innerText = "";
   this.classList.add("hide");
   isEmpty = true;
 })
 
+
+
+// Faccio un loop da 1 fino a il valore trovato con lo switch e per ogni iterazione creo un elemento div, con classe square, che dentro ha il numero al contatore del loop, e infine ad esso stesso gli creo un addEventListener che al click gli assegni una classe per colorarlo e stampo in console il suo numero.
+
+
+// Una volta che finisce tutta la logica del click inverto il valore della flag.
+
+
+function createCells(difficoltà, width){
+  const squares = document.getElementsByClassName("square");
+
+  for(let i = 1; i < difficoltà; i++){
+    let square = document.createElement("div");
+    square.style.width = width;
+    square.classList.add("square");
+    square.innerHTML = i;
+    container.append(square);
+
+    square.addEventListener("click", function(){
+      console.log(squares[i].isBomb);
+
+      if(square.isBomb){
+
+        for(let i = 0; i < squares.length; i++){
+
+          console.log(squares[i].isBomb)
+
+          if(squares[i].isBomb) {
+            squares[i].classList.add("bomb");
+            console.log("hai perso");
+          } 
+
+          
+          squares[i].isBomb = null;
+        }
+        let msg = document.createElement("h1");
+        msg.innerText = `Hai perso, il tuo punteggio è ${score},
+         su un massimo di ${difficoltà - BOMBS_NUMBER - 1} `;
+        mainWrapper.prepend(msg)
+        let overlay = document.createElement("div");
+        overlay.classList.add("overlay");
+        container.append(overlay);
+        score = 0;
+      }
+      this.classList.add("blue");
+      score++;
+    })
+
+
+  }
+}
 
 
 
